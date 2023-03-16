@@ -105,14 +105,7 @@ pub mod jupiter_override {
         pub platform_fee_bps: u8,
     }
 
-    impl AnchorDeserialize for Route
-    where
-        SwapLeg: borsh::BorshDeserialize,
-        u64: borsh::BorshDeserialize,
-        u64: borsh::BorshDeserialize,
-        u16: borsh::BorshDeserialize,
-        u8: borsh::BorshDeserialize,
-    {
+    impl AnchorDeserialize for Route {
         fn deserialize(buf: &mut &[u8]) -> std::result::Result<Route, std::io::Error> {
             if buf.len() < Self::DISCRIMINATOR.len() {
                 return Err(std::io::ErrorKind::InvalidData.into());
@@ -146,12 +139,26 @@ mod test {
 
     #[test]
     pub fn deserialize_route() -> Result<()> {
-        let buf: [u8; 37] = [
-            229, 23, 203, 151, 122, 227, 173, 42, 0, 2, 0, 0, 0, 2, 17, 1, 2, 25, 100, 0, 0, 0, 0,
-            0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0,
+        let buf: [u8; 34] = [
+            229, 23, 203, 151, 122, 227, 173, 42, 0, 1, 0, 0, 0, 2, 3, 100, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 0, 0, 0, 0, 0, 50, 0, 0,
         ];
 
         let route = Route::deserialize(&mut &buf[..])?;
+
+        println!("{:?}", route);
+
+        let expected_result = Route {
+            swap_leg: SwapLeg::Chain {
+                swap_legs: vec![SwapLeg::Swap {
+                    swap: Swap::TokenSwap,
+                }],
+            },
+            in_amount: 100,
+            quoted_out_amount: 1,
+            slippage_bps: 50,
+            platform_fee_bps: 0,
+        };
 
         Ok(())
     }
