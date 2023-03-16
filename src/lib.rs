@@ -30,6 +30,17 @@ pub mod jupiter_override {
         Aldrin { side: Side },
         AldrinV2 { side: Side },
         Whirlpool { a_to_b: bool },
+        Invariant { x_to_y: bool },
+        Meteora,
+        GooseFX,
+        DeltaFi { stable: bool },
+        Balansol,
+        MarcoPolo { x_to_y: bool },
+        Dradex { side: Side },
+        LifinityV2,
+        RaydiumClmm { side: Side },
+        Openbook { side: Side },
+        Phoenix { side: Side },
     }
 
     #[derive(Debug)]
@@ -85,7 +96,7 @@ pub mod jupiter_override {
         }
     }
 
-    #[derive(AnchorSerialize, AnchorDeserialize, Debug)]
+    #[derive(AnchorSerialize, Debug)]
     pub struct Route {
         pub swap_leg: SwapLeg,
         pub in_amount: u64,
@@ -94,9 +105,54 @@ pub mod jupiter_override {
         pub platform_fee_bps: u8,
     }
 
+    impl AnchorDeserialize for Route
+    where
+        SwapLeg: borsh::BorshDeserialize,
+        u64: borsh::BorshDeserialize,
+        u64: borsh::BorshDeserialize,
+        u16: borsh::BorshDeserialize,
+        u8: borsh::BorshDeserialize,
+    {
+        fn deserialize(buf: &mut &[u8]) -> std::result::Result<Route, std::io::Error> {
+            if buf.len() < Self::DISCRIMINATOR.len() {
+                return Err(std::io::ErrorKind::InvalidData.into());
+            }
+            let given_disc = &buf[..8];
+            if &Self::DISCRIMINATOR != given_disc {
+                return Err(std::io::ErrorKind::InvalidData.into());
+            };
+            let raw_data = &mut &buf[8..];
+            Ok(Self {
+                swap_leg: borsh::BorshDeserialize::deserialize(raw_data)?,
+                in_amount: borsh::BorshDeserialize::deserialize(raw_data)?,
+                quoted_out_amount: borsh::BorshDeserialize::deserialize(raw_data)?,
+                slippage_bps: borsh::BorshDeserialize::deserialize(raw_data)?,
+                platform_fee_bps: borsh::BorshDeserialize::deserialize(raw_data)?,
+            })
+        }
+    }
+
     impl Discriminator for Route {
         const DISCRIMINATOR: [u8; 8] = [229, 23, 203, 151, 122, 227, 173, 42];
     }
 
     impl InstructionData for Route {}
+}
+
+#[cfg(test)]
+mod test {
+    use super::jupiter_override::*;
+    use anchor_lang::prelude::*;
+
+    #[test]
+    pub fn deserialize_route() -> Result<()> {
+        let buf: [u8; 37] = [
+            229, 23, 203, 151, 122, 227, 173, 42, 0, 2, 0, 0, 0, 2, 17, 1, 2, 25, 100, 0, 0, 0, 0,
+            0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0,
+        ];
+
+        let route = Route::deserialize(&mut &buf[..])?;
+
+        Ok(())
+    }
 }
