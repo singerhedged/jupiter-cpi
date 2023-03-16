@@ -10,7 +10,7 @@ pub mod jupiter_override {
     use anchor_lang::{AnchorSerialize, InstructionData};
     use std::io::Write;
 
-    #[derive(AnchorSerialize, AnchorDeserialize)]
+    #[derive(AnchorSerialize, AnchorDeserialize, Debug)]
     pub enum Swap {
         Saber,
         SaberAddDecimalsDeposit,
@@ -32,6 +32,7 @@ pub mod jupiter_override {
         Whirlpool { a_to_b: bool },
     }
 
+    #[derive(Debug)]
     pub enum SwapLeg {
         Chain { swap_legs: Vec<SwapLeg> },
         Split { split_legs: Vec<SplitLeg> },
@@ -84,7 +85,7 @@ pub mod jupiter_override {
         }
     }
 
-    #[derive(AnchorSerialize, AnchorDeserialize)]
+    #[derive(AnchorSerialize, AnchorDeserialize, Debug)]
     pub struct Route {
         pub swap_leg: SwapLeg,
         pub in_amount: u64,
