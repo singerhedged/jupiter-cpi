@@ -3,45 +3,14 @@ anchor_gen::generate_cpi_crate!("idl.json");
 anchor_lang::declare_id!("JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB");
 
 pub mod jupiter_override {
-    use super::Side;
-    use super::SplitLeg;
+
     use anchor_lang::prelude::*;
     use anchor_lang::Discriminator;
     use anchor_lang::{AnchorSerialize, InstructionData};
     use std::io::Write;
 
-    #[derive(AnchorSerialize, AnchorDeserialize, Debug)]
-    pub enum Swap {
-        Saber,
-        SaberAddDecimalsDeposit,
-        SaberAddDecimalsWithdraw,
-        TokenSwap,
-        Sencha,
-        Step,
-        Cropper,
-        Raydium,
-        Crema,
-        Lifinity,
-        Mercurial,
-        Cykura,
-        Serum { side: Side },
-        MarinadeDeposit,
-        MarinadeUnstake,
-        Aldrin { side: Side },
-        AldrinV2 { side: Side },
-        Whirlpool { a_to_b: bool },
-        Invariant { x_to_y: bool },
-        Meteora,
-        GooseFX,
-        DeltaFi { stable: bool },
-        Balansol,
-        MarcoPolo { x_to_y: bool },
-        Dradex { side: Side },
-        LifinityV2,
-        RaydiumClmm { side: Side },
-        Openbook { side: Side },
-        Phoenix { side: Side },
-    }
+    use crate::SplitLeg;
+    use crate::Swap;
 
     #[derive(Debug)]
     pub enum SwapLeg {
@@ -134,12 +103,13 @@ pub mod jupiter_override {
 
 #[cfg(test)]
 mod test {
-    use super::jupiter_override::*;
     use anchor_lang::prelude::*;
+
+    use crate::jupiter_override::Route;
 
     #[test]
     pub fn deserialize_route() -> Result<()> {
-        let buf: [u8; 34] = [
+        let buf = [
             229, 23, 203, 151, 122, 227, 173, 42, 0, 1, 0, 0, 0, 2, 3, 100, 0, 0, 0, 0, 0, 0, 0, 1,
             0, 0, 0, 0, 0, 0, 0, 50, 0, 0,
         ];
@@ -147,18 +117,6 @@ mod test {
         let route = Route::deserialize(&mut &buf[..])?;
 
         println!("{:?}", route);
-
-        let expected_result = Route {
-            swap_leg: SwapLeg::Chain {
-                swap_legs: vec![SwapLeg::Swap {
-                    swap: Swap::TokenSwap,
-                }],
-            },
-            in_amount: 100,
-            quoted_out_amount: 1,
-            slippage_bps: 50,
-            platform_fee_bps: 0,
-        };
 
         Ok(())
     }
