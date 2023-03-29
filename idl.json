@@ -2369,7 +2369,7 @@
           {
             "name": "swapLeg",
             "type": {
-              "defined": "SwapLegDeeper"
+              "defined": "SwapLegSwap"
             }
           }
         ]
@@ -2801,4 +2801,3 @@
     }
   ]
 }
-
